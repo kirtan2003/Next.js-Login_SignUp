@@ -10,9 +10,19 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
         if (!user) throw new Error("User not found");
 
         if (emailType === 'VERIFY') {
-            await User.findByIdAndUpdate(userId, { verifyToken: hashedToken, verifyTokenExpiry: Date.now() + 3600000 })
+            await User.findByIdAndUpdate(userId, {
+                $set: {
+                    verifyToken: hashedToken,
+                    verifyTokenExpiry: Date.now() + 3600000
+                }
+            })
         } else if (emailType === 'RESET') {
-            await User.findByIdAndUpdate(userId, { forgotPasswordToken: hashedToken, forgotPasswordTokenExpiry: Date.now() + 3600000 })
+            await User.findByIdAndUpdate(userId, {
+                $set: {
+                    forgotPasswordToken: hashedToken,
+                    forgotPasswordTokenExpiry: Date.now() + 3600000
+                }
+            })
         }
 
         // Looking to send emails in production? Check out our Email API/SMTP product!
@@ -28,7 +38,7 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
         const actionURL = emailType === "VERIFY"
             ? `${process.env.DOMAIN}/verifyemail?token=${hashedToken}`
             : `${process.env.DOMAIN}/resetpassword?token=${hashedToken}`;
-        
+
         const mailOptions = {
             from: `"Next Auth" <no-reply@yourdomain.com>`, // sender address
             to: email, // list of receivers
